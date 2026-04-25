@@ -1,57 +1,181 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-    <title>Chatbot</title>
-        <style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Assistant E-Commerce</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
-    font-family: Arial;
-    background: #f5f5f5;
+font-family: 'Segoe UI', sans-serif;
+background: #f0f4f8;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+}
+
+.chat-container {
+width: 420px;
+height: 600px;
+background: white;
+border-radius: 16px;
+box-shadow: 0 8px 32px rgba(0,0,0,0.12);
+display: flex;
+flex-direction: column;
+overflow: hidden;
+}
+
+.chat-header {
+background: #1a56db;
+padding: 20px;
+color: white;
+display: flex;
+align-items: center;
+gap: 12px;
+}
+
+.avatar {
+width: 42px;
+height: 42px;
+background: white;
+border-radius: 50%;
+display: flex;
+align-items: center;
+justify-content: center;
+font-size: 20px;
+}
+
+.header-info h2 {
+font-size: 16px;
+font-weight: 600;
+}
+
+.header-info p {
+font-size: 12px;
+opacity: 0.85;
+}
+
+.online-dot {
+width: 8px;
+height: 8px;
+background: #22c55e;
+border-radius: 50%;
+display: inline-block;
+margin-right: 4px;
 }
 
 #chat {
-    background: white;
-    padding: 10px;
-    height: 300px;
-    overflow-y: auto;
-    margin-bottom: 10px;
-    border-radius: 10px;
+flex: 1;
+padding: 20px;
+overflow-y: auto;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.message {
+max-width: 78%;
+padding: 10px 14px;
+border-radius: 12px;
+font-size: 14px;
+line-height: 1.5;
+}
+
+.message.user {
+background: #1a56db;
+color: white;
+align-self: flex-end;
+border-bottom-right-radius: 4px;
+}
+
+.message.bot {
+background: #f1f5f9;
+color: #1e293b;
+align-self: flex-start;
+border-bottom-left-radius: 4px;
+}
+
+.chat-input {
+padding: 16px;
+border-top: 1px solid #e2e8f0;
+display: flex;
+gap: 10px;
 }
 
 input {
-    padding: 10px;
+flex: 1;
+padding: 10px 16px;
+border: 1px solid #cbd5e1;
+border-radius: 24px;
+font-size: 14px;
+outline: none;
+transition: border 0.2s;
 }
 
+input:focus { border-color: #1a56db; }
+
 button {
-    padding: 10px;
-    background: black;
-    color: white;
-    border: none;
+background: #1a56db;
+color: white;
+border: none;
+border-radius: 50%;
+width: 42px;
+height: 42px;
+cursor: pointer;
+font-size: 18px;
+transition: background 0.2s;
 }
+
+button:hover { background: #1648c0; }
 </style>
 </head>
 <body>
-    <h2>Chatbot</h2>
+<div class="chat-container">
+<div class="chat-header">
+<div class="avatar">🤖</div>
+<div class="header-info">
+<h2>Assistant E-Commerce</h2>
+<p><span class="online-dot"></span>En ligne</p>
+</div>
+</div>
 
-    <input type="text" id="message" placeholder="Message...">
-    <button onclick="sendMessage()">Envoyer</button>
+<div id="chat">
+<div class="message bot">Bonjour ! Comment puis-je vous aider avec votre boutique aujourd'hui ? 👋</div>
+</div>
 
-    <div id="chat"></div>
+<div class="chat-input">
+<input type="text" id="message" placeholder="Écrivez votre message...">
+<button onclick="sendMessage()">➤</button>
+</div>
+</div>
 
-    <script>
-        async function sendMessage() {
-            const msg = document.getElementById("message").value;
+<script>
+async function sendMessage() {
+const input = document.getElementById("message");
+const msg = input.value.trim();
+if (!msg) return;
 
-            const res = await fetch("/chat", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({message: msg})
-            });
+const chat = document.getElementById("chat");
+chat.innerHTML += `<div class="message user">${msg}</div>`;
+input.value = "";
+chat.scrollTop = chat.scrollHeight;
 
-            const data = await res.json();
-            document.getElementById("chat").innerHTML +=
-                "<p><b>Toi:</b> " + msg + "</p>" +
-                "<p><b>Bot:</b> " + data.reply + "</p>";
-        }
-    </script>
+const res = await fetch("/chat", {
+method: "POST",
+headers: {"Content-Type": "application/json"},
+body: JSON.stringify({message: msg})
+});
+
+const data = await res.json();
+chat.innerHTML += `<div class="message bot">${data.reply}</div>`;
+chat.scrollTop = chat.scrollHeight;
+}
+
+document.getElementById("message").addEventListener("keypress", function(e) {
+if (e.key === "Enter") sendMessage();
+});
+</script>
 </body>
 </html>
